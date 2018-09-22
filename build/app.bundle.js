@@ -61,7 +61,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "455befa2819cdbed2046"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "fd24f6be42a82d06ebe8"; // eslint-disable-line no-unused-vars
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
@@ -32155,6 +32155,212 @@ var withRouter = function withRouter(Component) {
 
 /***/ }),
 
+/***/ "./node_modules/react-speech-recognition/lib/SpeechRecognition.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+exports.default = SpeechRecognition;
+
+var _react = __webpack_require__("./node_modules/react/react.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function SpeechRecognition(options) {
+  var SpeechRecognitionInner = function SpeechRecognitionInner(WrappedComponent) {
+    var BrowserSpeechRecognition = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition || window.oSpeechRecognition);
+    var recognition = BrowserSpeechRecognition ? new BrowserSpeechRecognition() : null;
+    var browserSupportsSpeechRecognition = recognition !== null;
+    var listening = undefined;
+    if (!browserSupportsSpeechRecognition || options && options.autoStart === false) {
+      listening = false;
+    } else {
+      recognition.start();
+      listening = true;
+    }
+    var pauseAfterDisconnect = false;
+    var interimTranscript = '';
+    var finalTranscript = '';
+
+    return (function (_Component) {
+      _inherits(SpeechRecognitionContainer, _Component);
+
+      function SpeechRecognitionContainer(props) {
+        _classCallCheck(this, SpeechRecognitionContainer);
+
+        var _this = _possibleConstructorReturn(this, (SpeechRecognitionContainer.__proto__ || Object.getPrototypeOf(SpeechRecognitionContainer)).call(this, props));
+
+        _this.disconnect = function (disconnectType) {
+          if (recognition) {
+            switch (disconnectType) {
+              case 'ABORT':
+                pauseAfterDisconnect = true;
+                recognition.abort();
+                break;
+              case 'RESET':
+                pauseAfterDisconnect = false;
+                recognition.abort();
+                break;
+              case 'STOP':
+              default:
+                pauseAfterDisconnect = true;
+                recognition.stop();
+            }
+          }
+        };
+
+        _this.resetTranscript = function () {
+          interimTranscript = '';
+          finalTranscript = '';
+          _this.disconnect('RESET');
+          _this.setState({ interimTranscript: interimTranscript, finalTranscript: finalTranscript });
+        };
+
+        _this.startListening = function () {
+          if (recognition && !listening) {
+            try {
+              recognition.start();
+            } catch (DOMException) {
+              // Tried to start recognition after it has already started - safe to swallow this error
+            }
+            listening = true;
+            _this.setState({ listening: listening });
+          }
+        };
+
+        _this.abortListening = function () {
+          listening = false;
+          _this.setState({ listening: listening });
+          _this.disconnect('ABORT');
+        };
+
+        _this.stopListening = function () {
+          listening = false;
+          _this.setState({ listening: listening });
+          _this.disconnect('STOP');
+        };
+
+        _this.state = {
+          interimTranscript: interimTranscript,
+          finalTranscript: finalTranscript,
+          listening: false
+        };
+        return _this;
+      }
+
+      _createClass(SpeechRecognitionContainer, [{
+        key: 'componentWillMount',
+        value: function componentWillMount() {
+          if (recognition) {
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.onresult = this.updateTranscript.bind(this);
+            recognition.onend = this.onRecognitionDisconnect.bind(this);
+            this.setState({ listening: listening });
+          }
+        }
+      }, {
+        key: 'onRecognitionDisconnect',
+        value: function onRecognitionDisconnect() {
+          listening = false;
+          if (pauseAfterDisconnect) {
+            this.setState({ listening: listening });
+          } else {
+            this.startListening();
+          }
+          pauseAfterDisconnect = false;
+        }
+      }, {
+        key: 'updateTranscript',
+        value: function updateTranscript(event) {
+          interimTranscript = '';
+          for (var i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript = this.concatTranscripts(finalTranscript, event.results[i][0].transcript);
+            } else {
+              interimTranscript = this.concatTranscripts(interimTranscript, event.results[i][0].transcript);
+            }
+          }
+          this.setState({ finalTranscript: finalTranscript, interimTranscript: interimTranscript });
+        }
+      }, {
+        key: 'concatTranscripts',
+        value: function concatTranscripts() {
+          for (var _len = arguments.length, transcriptParts = Array(_len), _key = 0; _key < _len; _key++) {
+            transcriptParts[_key] = arguments[_key];
+          }
+
+          return transcriptParts.map(function (t) {
+            return t.trim();
+          }).join(' ').trim();
+        }
+      }, {
+        key: 'render',
+        value: function render() {
+          var transcript = this.concatTranscripts(finalTranscript, interimTranscript);
+
+          return _react2.default.createElement(WrappedComponent, _extends({
+            resetTranscript: this.resetTranscript,
+            startListening: this.startListening,
+            abortListening: this.abortListening,
+            stopListening: this.stopListening,
+            transcript: transcript,
+            recognition: recognition,
+            browserSupportsSpeechRecognition: browserSupportsSpeechRecognition
+          }, this.state, this.props));
+        }
+      }]);
+
+      return SpeechRecognitionContainer;
+    })(_react.Component);
+  };
+
+  if (typeof options === 'function') {
+    return SpeechRecognitionInner(options);
+  } else {
+    return SpeechRecognitionInner;
+  }
+}
+
+/***/ }),
+
+/***/ "./node_modules/react-speech-recognition/lib/index.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _SpeechRecognition = __webpack_require__("./node_modules/react-speech-recognition/lib/SpeechRecognition.js");
+
+var _SpeechRecognition2 = _interopRequireDefault(_SpeechRecognition);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = _SpeechRecognition2.default;
+
+/***/ }),
+
 /***/ "./node_modules/react/lib/KeyEscapeUtils.js":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -42247,9 +42453,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_router_dom__ = __webpack_require__("./node_modules/react-router-dom/es/index.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Error404__ = __webpack_require__("./src/components/Error404.jsx");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Error404___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__Error404__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Home__ = __webpack_require__("./src/components/Home.jsx");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Header__ = __webpack_require__("./src/components/Header.jsx");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__Test__ = __webpack_require__("./src/components/Test.jsx");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__TextConvert__ = __webpack_require__("./src/components/TextConvert.jsx");
+
+
 
 
 
@@ -42258,57 +42467,22 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 function App() {
 
-  // class App extends React.Component{
-  //
-  //   constructor(props){
-  //     super(props);
-  //     this.state ={
-  //       tapList: []
-  //     };
-  //     this.handleNewTapToList = this.handleNewTapToList.bind(this);
-  //   }
-  // componentDidMount(){
-  //   this.waitTimeUpdate = setInterval(()=>
-  //     this.updateTapWaitTime(),
-  //   5000
-  //   );
-  // }
-  //
-  // componentWillUnmount(){
-  //   clearInterval(this.waitTimeUpdate);
-  // }
-  //
-  // updateTapWaitTime(){
-  //   let newTapList = this.state.tapList.slice();
-  //   newTapList.forEach((tap) =>
-  //     tap.formattedWaitTime =(tap.timeOpen).fromNow(true)
-  //   );
-  //   this.setState({tapList: newTapList});
-  // }
-  //
-
-  // handleNewTapToList(newTap){
-  //   var newTapList = this.state.tapList.slice();
-  //
-  //   newTapList.push(newTap);
-  //   this.setState({tapList: newTapList});
-  // }
-
-
   return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
     'div',
     null,
-    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-      'h1',
-      null,
-      'Hello this is the app page'
-    ),
+    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_4__Header__["a" /* default */], null),
     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
       __WEBPACK_IMPORTED_MODULE_1_react_router_dom__["d" /* Switch */],
       null,
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_router_dom__["c" /* Route */], { exact: true, path: '/', component: App }),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_router_dom__["c" /* Route */], { path: '/home', component: __WEBPACK_IMPORTED_MODULE_3__Home__["a" /* default */] }),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_router_dom__["c" /* Route */], { component: __WEBPACK_IMPORTED_MODULE_2__Error404___default.a })
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_router_dom__["c" /* Route */], { exact: true, path: '/', component: __WEBPACK_IMPORTED_MODULE_3__Home__["a" /* default */] }),
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_router_dom__["c" /* Route */], { path: '/test', component: __WEBPACK_IMPORTED_MODULE_5__Test__["a" /* default */] }),
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_router_dom__["c" /* Route */], { path: '/textConvert', component: __WEBPACK_IMPORTED_MODULE_6__TextConvert__["a" /* default */] }),
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_react_router_dom__["c" /* Route */], { component: __WEBPACK_IMPORTED_MODULE_2__Error404__["a" /* default */] }),
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'h1',
+        null,
+        'App Page'
+      )
     )
   );
 }
@@ -42332,14 +42506,49 @@ var _temp = function () {
 /***/ }),
 
 /***/ "./src/components/Error404.jsx":
-/***/ (function(module, exports) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__("./node_modules/react/react.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_router_dom__ = __webpack_require__("./node_modules/react-router-dom/es/index.js");
+
+
+
+function Error404() {
+  return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+    'div',
+    null,
+    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'h2',
+      null,
+      'The page you are looking for does not exist!'
+    ),
+    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'h3',
+      null,
+      'Would you like to return ',
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        __WEBPACK_IMPORTED_MODULE_1_react_router_dom__["b" /* Link */],
+        { to: '/' },
+        'home'
+      ),
+      ' instead?'
+    )
+  );
+}
+var _default = Error404;
+/* harmony default export */ __webpack_exports__["a"] = (_default);
 ;
 
 var _temp = function () {
   if (typeof __REACT_HOT_LOADER__ === 'undefined') {
     return;
   }
+
+  __REACT_HOT_LOADER__.register(Error404, 'Error404', '/Users/brianpalowski/Desktop/Project-CapStone/src/components/Error404.jsx');
+
+  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/brianpalowski/Desktop/Project-CapStone/src/components/Error404.jsx');
 }();
 
 ;
@@ -42363,19 +42572,24 @@ function Header() {
     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
       __WEBPACK_IMPORTED_MODULE_1_react_router_dom__["b" /* Link */],
       { to: '/' },
-      'App'
+      'Home'
     ),
-    ' | ',
+    '|',
     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
       __WEBPACK_IMPORTED_MODULE_1_react_router_dom__["b" /* Link */],
-      { to: '/home' },
-      'Home'
+      { to: '/test' },
+      'Test'
+    ),
+    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      __WEBPACK_IMPORTED_MODULE_1_react_router_dom__["b" /* Link */],
+      { to: '/textConvert' },
+      'TextConvert'
     )
   );
 }
 
 var _default = Header;
-/* unused harmony default export */ var _unused_webpack_default_export = (_default);
+/* harmony default export */ __webpack_exports__["a"] = (_default);
 ;
 
 var _temp = function () {
@@ -42405,9 +42619,9 @@ function Home() {
     'div',
     null,
     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-      'h1',
+      'p',
       null,
-      'Hello'
+      'Food'
     )
   );
 }
@@ -42424,6 +42638,137 @@ var _temp = function () {
   __REACT_HOT_LOADER__.register(Home, 'Home', '/Users/brianpalowski/Desktop/Project-CapStone/src/components/Home.jsx');
 
   __REACT_HOT_LOADER__.register(_default, 'default', '/Users/brianpalowski/Desktop/Project-CapStone/src/components/Home.jsx');
+}();
+
+;
+
+/***/ }),
+
+/***/ "./src/components/Test.jsx":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__("./node_modules/react/react.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+
+
+function Test() {
+  return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+    'div',
+    null,
+    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'p',
+      null,
+      'Test'
+    )
+  );
+}
+
+var _default = Test;
+/* harmony default export */ __webpack_exports__["a"] = (_default);
+;
+
+var _temp = function () {
+  if (typeof __REACT_HOT_LOADER__ === 'undefined') {
+    return;
+  }
+
+  __REACT_HOT_LOADER__.register(Test, 'Test', '/Users/brianpalowski/Desktop/Project-CapStone/src/components/Test.jsx');
+
+  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/brianpalowski/Desktop/Project-CapStone/src/components/Test.jsx');
+}();
+
+;
+
+/***/ }),
+
+/***/ "./src/components/TextConvert.jsx":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__("./node_modules/react/react.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_speech_recognition__ = __webpack_require__("./node_modules/react-speech-recognition/lib/index.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_speech_recognition___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_react_speech_recognition__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_prop_types__ = __webpack_require__("./node_modules/prop-types/index.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_prop_types__);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+
+
+
+
+var propTypes = {
+  // Props injected by SpeechRecognition
+  transcript: __WEBPACK_IMPORTED_MODULE_2_prop_types___default.a.string,
+  resetTranscript: __WEBPACK_IMPORTED_MODULE_2_prop_types___default.a.func,
+  browserSupportsSpeechRecognition: __WEBPACK_IMPORTED_MODULE_2_prop_types___default.a.bool
+};
+
+var TextConvert = function (_React$Component) {
+  _inherits(TextConvert, _React$Component);
+
+  function TextConvert() {
+    _classCallCheck(this, TextConvert);
+
+    return _possibleConstructorReturn(this, (TextConvert.__proto__ || Object.getPrototypeOf(TextConvert)).apply(this, arguments));
+  }
+
+  _createClass(TextConvert, [{
+    key: 'render',
+    value: function render() {
+      var _props = this.props,
+          transcript = _props.transcript,
+          resetTranscript = _props.resetTranscript,
+          browserSupportsSpeechRecognition = _props.browserSupportsSpeechRecognition;
+
+      if (!browserSupportsSpeechRecognition) {
+        return null;
+      }
+      console.log(transcript);
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'div',
+        null,
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'button',
+          { onClick: resetTranscript },
+          'Reset'
+        ),
+        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+          'span',
+          null,
+          transcript
+        )
+      );
+    }
+  }]);
+
+  return TextConvert;
+}(__WEBPACK_IMPORTED_MODULE_0_react___default.a.Component);
+
+TextConvert.propTypes = propTypes;
+
+var _default = __WEBPACK_IMPORTED_MODULE_1_react_speech_recognition___default()(TextConvert);
+
+/* harmony default export */ __webpack_exports__["a"] = (_default);
+;
+
+var _temp = function () {
+  if (typeof __REACT_HOT_LOADER__ === 'undefined') {
+    return;
+  }
+
+  __REACT_HOT_LOADER__.register(propTypes, 'propTypes', '/Users/brianpalowski/Desktop/Project-CapStone/src/components/TextConvert.jsx');
+
+  __REACT_HOT_LOADER__.register(TextConvert, 'TextConvert', '/Users/brianpalowski/Desktop/Project-CapStone/src/components/TextConvert.jsx');
+
+  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/brianpalowski/Desktop/Project-CapStone/src/components/TextConvert.jsx');
 }();
 
 ;

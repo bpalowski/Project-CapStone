@@ -23,6 +23,7 @@
     "react-jsx": "^1.0.0",
     "react-router-dom": "^4.0.0",
     "react-sound": "^1.2.0",
+    "react-speech-recognition": "^1.0.7",
     "styled-jsx": "^3.0.2",
     "uuid": "^3.2.1"
   },
@@ -42,5 +43,14 @@
     "url-loader": "^0.6.2",
     "webpack": "^3.4.0",
     "webpack-dev-server": "^2.5.0"
+  },
+  "permissions": {
+    "audio-capture": {
+      "description": "Audio capture"
+    },
+    "speech-recognition": {
+      "description": "Speech recognition"
+    },
+    "type": "privileged"
   }
 }
