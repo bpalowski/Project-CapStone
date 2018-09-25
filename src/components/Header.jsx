@@ -5,9 +5,9 @@ import { Link } from 'react-router-dom';
 function Header(){
   return (
     <div>
-      <Link to="/">Home</Link>|
-      <Link to="/test">Test</Link>
-      <Link to="/textConvert">TextConvert</Link>
+      <Link to="/">Home</Link>|<Link to="/newRec">NewRec</Link>|
+
+
     </div>
   );
 }

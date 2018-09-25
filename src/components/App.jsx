@@ -4,7 +4,8 @@ import Error404 from './Error404';
 import Home from './Home';
 import Header from './Header';
 import Test from'./Test';
-import TextConvert from'./TextConvert';
+import NewRec from'./NewRec';
+
 import Moment from 'moment';
 
 function App (){
@@ -14,9 +15,10 @@ function App (){
     <div>
       <Header/>
       <Switch>
-        <Route exact path='/' component={Home} />
+        <Route exact path='/' component={Home}/>
+        <Route path='/newRec' render={()=><NewRec/>}/>
         <Route  path='/test' component={Test} />
-        <Route  path='/textConvert' component={TextConvert} />
+
         <Route component={Error404} />
         <h1>App Page</h1>
       </Switch>
