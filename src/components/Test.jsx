@@ -14,7 +14,7 @@ class Test extends React.Component {
   }
 
 
-changeOfViewConformation(){
+  changeOfViewConformation(){
     this.setState({booleanView: true});
   }
 
@@ -24,7 +24,7 @@ changeOfViewConformation(){
       viewDisplayCurrently = <Home onToggleListen={this.props.onToggleListen}/>;
     }else{
       viewDisplayCurrently = <NewRec agreement={this.changeOfViewConformation}/>;
-    };
+    }
     return (
       <div>
         {viewDisplayCurrently}

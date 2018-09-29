@@ -5,6 +5,7 @@ import Home from './Home';
 import Header from './Header';
 import Test from'./Test';
 import NewRec from'./NewRec';
+import ChangeImg from'./ChangeImg';
 
 import Moment from 'moment';
 
@@ -18,6 +19,7 @@ function App (){
         <Route exact path='/' component={Home}/>
         <Route path='/newRec' render={()=><NewRec/>}/>
         <Route  path='/test' component={Test} />
+        <Route  path='/changeImg' component={ChangeImg} />
 
         <Route component={Error404} />
         <h1>App Page</h1>
